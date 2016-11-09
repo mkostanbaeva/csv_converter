@@ -88,17 +88,17 @@ def get_output_row(irow, is_sup):
 
     # 10-пол
     if irow['sex']:
-        if irow['sex'].strip().lower() == u'f':
-            orow['sexpr'] = u'ж'
-        elif irow['sex'].strip().lower() == u'm':
-            orow['sexpr'] = u'м'
-        elif irow['sex'].strip().lower() == u'u':
+        if irow['sex'].lower() == 'f':
+            orow['sexpr'] = 'ж'
+        elif irow['sex'].lower() == 'm':
+            orow['sexpr'] = 'м'
+        elif irow['sex'].lower() == 'u':
             orow['sexpr'] = ' '
         else:
             orow['sexpr'] = irow['sex']
 
     # 16-состав товара
-    irow['structpr'] = irow['productstr']
+    orow['structpr'] = irow['productstr']
 
     # 18-Возраст от
     if irow['agefromid']:
@@ -177,7 +177,17 @@ def get_output_row(irow, is_sup):
             orow['agetopr'] = irow['agetoid']
 
     #24-Коллекция
-    orow['seasonpr'] = strx(irow['season']) + strx(irow['seasonyear'])
+    if irow['season']:
+        if irow['season'].lower() == 'aw':
+            orow['seasonpr'] = 'Осень-зима ' + strx(irow['seasonyear'])
+        elif irow['season'].lower() == 'SS':
+            orow['seasonpr'] = 'Весна-лето ' + strx(irow['seasonyear'])
+        elif irow['season'].lower() == 'sch':
+            orow['seasonpr'] = 'Школа ' + strx(irow['seasonyear'])
+        elif irow['season'].lower() == 'reg':
+            orow['seasonpr'] = strx(irow['seasonyear'])
+        else:
+            orow['seasonpr'] = strx(irow['season']) + strx(irow['seasonyear'])
 
     #17 - Страна происхождения
     orow['countrypr'] = irow['countryname']
@@ -223,11 +233,12 @@ with open('output.csv', 'wb') as writecsvfile:
             orow = get_output_row(irow, False)
             orow['index'] = str(i)
             i += 1
-
             writer.writerow(orow)
 
 
 orow['index'] = u'н/п'
+
+
 orow['iddm'] = u'уникальный ID ДМ'
 orow['art'] = u'Артикул'
 orow['catid'] = u'Категория'
