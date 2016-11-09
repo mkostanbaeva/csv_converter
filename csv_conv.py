@@ -1,6 +1,5 @@
 #coding=utf-8
 
-#from openpyxl import load_workbook
 import csv
 import requests
 #from Tkinter import Tk
@@ -218,7 +217,8 @@ i = 1
 with open('output.csv', 'wb') as writecsvfile:
     out_fieldnames = ['index', 'iddm', 'art', 'catid', 'namepr', 'brandpr', 'model', 'colorpr', 'descrpr', 'sexpr', 'volpr', 'wightpr', 'lenghtpr', 'heightpr', 'weightpr', 'structpr', 'countrypr', 'agefrompr', 'agetopr', 'kgt', 'recomm', 'tags', 'rating', 'seasonpr', 'price', 'pricevol']
     writer = csv.DictWriter(writecsvfile, fieldnames=out_fieldnames, delimiter=',')
-    writer.writeheader()
+    hrow = {'index': 'н/п', 'iddm': 'Уникальный ID ДМ', 'art': 'Артикул', 'catid': 'Категория', 'namepr': 'Наименование', 'brandpr': 'Бренд', 'colorpr': 'Цвет', 'descrpr': 'Описание', 'sexpr': 'Пол', 'volpr': 'Габариты', 'wightpr': 'Ширина см', 'lenghtpr':'Длина см', 'heightpr':'Высота см', 'weightpr': 'Вес', 'structpr':'Материал', 'countrypr':'Страна производитель', 'agefrompr':'Возрастная группа от', 'agetopr':'Возрастная группа до', 'kgt':'КГТ', 'recomm':'Рекомендуем?', 'tags':'теги, через запятую', 'rating':'Рейтинг', 'seasonpr':'Коллекция', 'price':'Цена', 'pricevol':'Ценовой уровень'}
+    writer.writerow(hrow)
 
     with open('input.csv', 'rb') as readcsvfile:
         in_fieldnames = ['iddm', 'art', 'name', 'brandid','brandname', 'countryid', 'countryname', '1', '2', 'weight', 'weightid','lenght', 'wight', 'height', 'volume', 'createdate', 'sex', 'productstr', 'groupproduct', 'namegroupproduct', 'colorid', 'colorname', 'sizeid', 'sizename', 'agefromid', 'agefromname', 'agetoid', 'agetoname', 'season', 'seasonyear', 'description']
@@ -235,35 +235,3 @@ with open('output.csv', 'wb') as writecsvfile:
             i += 1
             writer.writerow(orow)
 
-
-orow['index'] = u'н/п'
-
-
-orow['iddm'] = u'уникальный ID ДМ'
-orow['art'] = u'Артикул'
-orow['catid'] = u'Категория'
-orow['namepr'] = u'Наименование'
-orow['brandpr'] = u'Бренд'
-orow['model'] = u'Модель'
-orow['colorpr'] = u'Цвет'
-orow['descrpr'] = u'Описание'
-orow['sexpr'] = u'Пол'
-orow['volpr'] = u'Габариты'
-orow['wightpr'] = u'Ширина см'
-orow['lenghtpr'] = u'Длина см'
-orow['heightpr'] = u'Высота см'
-orow['weightpr'] = u'Вес'
-orow['structpr'] = u'Материал'
-orow['countrypr'] = u'Страна производитель'
-orow['agefrompr'] = u'Возрастная группа от'
-orow['agetopr'] = u'Возрастная группа до'
-orow['kgt'] = u'КГТ'
-orow['recomm'] = u'Рекомендуем?'
-orow['tags'] = u'теги, через запятую'
-orow['rating'] = u'Рейтинг'
-orow['seasonpr'] = u'Коллекция'
-orow['price'] = u'Цена'
-orow['pricevol'] = u'Ценовой уровень'
-
-# Save the file
-#wb.save("result.xlsx")
