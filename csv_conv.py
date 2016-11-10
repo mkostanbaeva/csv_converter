@@ -179,7 +179,7 @@ def get_output_row(irow, is_sup):
     if irow['season']:
         if irow['season'].lower() == 'aw':
             orow['seasonpr'] = 'Осень-зима ' + strx(irow['seasonyear'])
-        elif irow['season'].lower() == 'SS':
+        elif irow['season'].lower() == 'ss':
             orow['seasonpr'] = 'Весна-лето ' + strx(irow['seasonyear'])
         elif irow['season'].lower() == 'sch':
             orow['seasonpr'] = 'Школа ' + strx(irow['seasonyear'])
@@ -207,7 +207,7 @@ def get_output_row(irow, is_sup):
     orow['volpr'] = str(floatx(irow['wight']) * 100) + 'x' + str(floatx(irow['lenght'] )* 100.0) + 'x' + str(floatx(irow['height']) * 100.0)
 
     #9 - Описание
-    orow['descrpr'] = irow['description']
+    orow['descrpr'] = '"' + strx(irow['description']) + '"'
 
     return orow
 
