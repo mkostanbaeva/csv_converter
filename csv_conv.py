@@ -6,9 +6,31 @@ import requests
 #from tkFileDialog import askopenfilename, asksaveasfilename
 import re
 import sys
+import logging
+from logging import handlers
+import socket
+import traceback
 
 reload(sys)
 sys.setdefaultencoding('utf8')
+
+HOST = ('mail.detmir.ru', 25)
+FROM = '"Ошибочка вышла :(" <mlavrikova@detmir.ru>'
+TO = 'mlavrikova@detmir.ru', 'ikalinin@detmir.ru'
+SUBJECT = 'Ошибка конвертации ERP - ПРОМО'
+
+logging.basicConfig(level=logging.WARNING,
+                    format='%(asctime)s.%(msecs)d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S",
+                    filename=u'converterlog.log')
+
+
+
+handler = handlers.SMTPHandler(HOST, FROM, TO, SUBJECT)
+email_logger = logging.getLogger('mail.detmir.ru')
+email_logger.addHandler(handler)
+email_logger.setLevel = logging.CRITICAL
+
 
 def load_category_csv():
     result = dict()
@@ -67,7 +89,7 @@ def get_output_row(irow, is_sup):
             orow['namepr'] = vals[0].capitalize()
             orow['model'] = vals[2]
         else:
-            orow['namepr'] = irow['name']
+            orow['namepr'] = strx(irow['name'])
 
     # 4-Категория
     if irow['groupproduct']:
@@ -76,6 +98,9 @@ def get_output_row(irow, is_sup):
             orow['catid'] = category_dict[id_erp]
         else:
             orow['catid'] = irow['groupproduct']
+            logging.critical('Не найдено совпадения категории из ERP -' + irow['groupproduct'])
+            email_logger.critical('Не найдено совпадения категории из ERP -' + irow['groupproduct'])
+
 
     # 6-Бренд
     if irow['brandname']:
@@ -84,6 +109,8 @@ def get_output_row(irow, is_sup):
             orow['brandpr']= brands_dict[brand.replace(' ', '').lower()]
         else:
             orow['brandpr'] = irow['brandname']
+            logging.critical('Не найден брэнд -' + irow['brandname'])
+            email_logger.critical('Не найден брэнд -' + irow['brandname'])
 
     # 10-пол
     if irow['sex']:
@@ -95,6 +122,7 @@ def get_output_row(irow, is_sup):
             orow['sexpr'] = ' '
         else:
             orow['sexpr'] = irow['sex']
+            logging.warn('Не найдено значение пол -' + irow['sex'])
 
     # 16-состав товара
     orow['structpr'] = irow['productstr']
@@ -137,6 +165,7 @@ def get_output_row(irow, is_sup):
             orow['agefrompr'] = ' '
         else:
             orow['agefrompr'] = irow['agefromid']
+            logging.warn('Не найден возраст от -' + irow['agefromid'])
 
     # 19-Возраст до
     if irow['agetoid']:
@@ -174,6 +203,7 @@ def get_output_row(irow, is_sup):
             orow['agetopr'] = '108'
         else:
             orow['agetopr'] = irow['agetoid']
+            logging.warn('Не найден возраст до -' + irow['agetoid'])
 
     #24-Коллекция
     if irow['season']:
@@ -187,6 +217,7 @@ def get_output_row(irow, is_sup):
             orow['seasonpr'] = strx(irow['seasonyear'])
         else:
             orow['seasonpr'] = strx(irow['season']) + strx(irow['seasonyear'])
+            logging.warn('Не найдено совпадение сезона -' + irow['season'])
 
     #17 - Страна происхождения
     orow['countrypr'] = irow['countryname']
@@ -207,7 +238,7 @@ def get_output_row(irow, is_sup):
     orow['volpr'] = str(floatx(irow['wight']) * 100) + 'x' + str(floatx(irow['lenght'] )* 100.0) + 'x' + str(floatx(irow['height']) * 100.0)
 
     #9 - Описание
-    orow['descrpr'] = '"' + strx(irow['description']) + '"'
+    orow['descrpr'] = strx(irow['description']).replace('\*/', '<br>')
 
     return orow
 
@@ -216,7 +247,7 @@ def get_output_row(irow, is_sup):
 i = 1
 with open('output.csv', 'wb') as writecsvfile:
     out_fieldnames = ['index', 'iddm', 'art', 'catid', 'namepr', 'brandpr', 'model', 'colorpr', 'descrpr', 'sexpr', 'volpr', 'wightpr', 'lenghtpr', 'heightpr', 'weightpr', 'structpr', 'countrypr', 'agefrompr', 'agetopr', 'kgt', 'recomm', 'tags', 'rating', 'seasonpr', 'price', 'pricevol']
-    writer = csv.DictWriter(writecsvfile, fieldnames=out_fieldnames, delimiter=',')
+    writer = csv.DictWriter(writecsvfile, fieldnames=out_fieldnames, delimiter=',', quotechar='"')
     hrow = {'index': 'н/п', 'iddm': 'Уникальный ID ДМ', 'art': 'Артикул', 'catid': 'Категория', 'namepr': 'Наименование', 'brandpr': 'Бренд', 'colorpr': 'Цвет', 'descrpr': 'Описание', 'sexpr': 'Пол', 'volpr': 'Габариты', 'wightpr': 'Ширина см', 'lenghtpr':'Длина см', 'heightpr':'Высота см', 'weightpr': 'Вес', 'structpr':'Материал', 'countrypr':'Страна производитель', 'agefrompr':'Возрастная группа от', 'agetopr':'Возрастная группа до', 'kgt':'КГТ', 'recomm':'Рекомендуем?', 'tags':'теги, через запятую', 'rating':'Рейтинг', 'seasonpr':'Коллекция', 'price':'Цена', 'pricevol':'Ценовой уровень'}
     writer.writerow(hrow)
 
