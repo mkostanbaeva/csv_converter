@@ -71,10 +71,11 @@ def floatx(value):
 def strx(value):
   return str(value or '')
 
-global is_error = False
+is_error = False
 
 def get_output_row(irow, is_sup):
     orow = dict()
+    global is_error
 
     # 2-уникальный ID ДМ
     val = unicode(irow['iddm'])
@@ -117,6 +118,7 @@ def get_output_row(irow, is_sup):
             orow['brandpr'] = irow['brandname']
             logging.critical('Не найден брэнд -' + irow['brandname'])
             email_logger.critical(orow['iddm'] + ' - ' +'Не найден брэнд -' + irow['brandname'])
+            is_error = True
 
     # 10-пол
     if irow['sex']:
@@ -129,6 +131,7 @@ def get_output_row(irow, is_sup):
         else:
             orow['sexpr'] = irow['sex']
             email_logger.critical(orow['iddm'] + ' - ' + 'Не найдено значение пол -' + irow['sex'])
+            is_error = True
 
     # 16-состав товара
     orow['structpr'] = irow['productstr']
@@ -172,6 +175,7 @@ def get_output_row(irow, is_sup):
         else:
             orow['agefrompr'] = irow['agefromid']
             email_logger.critical(orow['iddm'] + ' - ' + 'Не найден возраст от -' + irow['agefromid'])
+            is_error = True
 
     # 19-Возраст до
     if irow['agetoid']:
@@ -210,6 +214,7 @@ def get_output_row(irow, is_sup):
         else:
             orow['agetopr'] = irow['agetoid']
             email_logger.critical(orow['iddm'] + ' - ' + 'Не найден возраст до -' + irow['agetoid'])
+            is_error = True
 
     #24-Коллекция
     if irow['season']:
@@ -224,6 +229,7 @@ def get_output_row(irow, is_sup):
         else:
             orow['seasonpr'] = strx(irow['season']) + strx(irow['seasonyear'])
             email_logger.critical(orow['iddm'] + ' - ' + 'Не найдено совпадение сезона -' + irow['season'])
+            is_error = True
 
     #17 - Страна происхождения
     orow['countrypr'] = irow['countryname']
@@ -278,9 +284,7 @@ logging.shutdown()
 if is_error:
     os.rename('output.csv', 'output.csv-error')
 
-    SUBJECT = "Email Data"
-    FROM = '"Ошибка конвертации" <autoerrors@detmir.ru>'
-    TO = 'mlavrikova@detmir.ru'  # , 'ikalinin@detmir.ru', 'FZuzikov@detmir.ru', 'NMineeva@detmir.ru', 'NSanina@detmir.ru', 'AOgay@detmir.ru'
+    SUBJECT = "Файл конвертации с ошибкой"
     msg = MIMEMultipart()
     msg['Subject'] = SUBJECT
     msg['From'] = FROM
