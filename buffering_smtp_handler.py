@@ -3,11 +3,12 @@ import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email import Encoders
+from email.mime.text import MIMEText
 
 
 class BufferingSMTPHandler(logging.handlers.BufferingHandler):
     def __init__(self, mailhost, mailport, timeout, fromaddr, toaddrs, subject, capacity,
-                 logging_format, filename_sended):
+                 logging_format):
         logging.handlers.BufferingHandler.__init__(self, capacity)
         self.mailhost = mailhost
         self.mailport = mailport
@@ -17,35 +18,43 @@ class BufferingSMTPHandler(logging.handlers.BufferingHandler):
         self.subject = subject
         self.formatter = logging_format
         self.setFormatter(logging.Formatter(logging_format))
-        self.filename_sended = filename_sended
 
-    def flush(self):
+    def flush(self, filename=None):
         if len(self.buffer) > 0:
             try:
                 import smtplib
                 port = self.mailport
                 if not port:
                     port = smtplib.SMTP_PORT
+
                 smtp = smtplib.SMTP(host=self.mailhost, port=port, timeout=self.timeout)
                 if isinstance(self.toaddrs, list):  # If to addrs is a list, then join them as a string
                     toaddrs = ','.join(self.toaddrs)
                 else:
                     toaddrs = self.toaddrs
-                msg = "From: {}\r\nTo: {}\r\nSubject: {}\r\n\r\n".format(self.fromaddr, toaddrs,
-                                                                         self.subject)
+
+                msg = MIMEMultipart()
+                msg['Subject'] = self.subject
+                msg['From'] = self.fromaddr
+                msg['To'] = toaddrs
+
+                text = ''
                 for record in self.buffer:
                     s = self.format(record)
-                    msg = msg + s + "\r\n"
+                    text = text + s + "\r\n"
+                body = MIMEText(text, 'plain')
+                msg.attach(body)
 
-                part = MIMEBase('application', "octet-stream")
-                part.set_payload(open(self.filename_sended, "rb").read())
-                Encoders.encode_base64(part)
+                if filename is not None:
+                    part = MIMEBase('application', "octet-stream")
+                    part.set_payload(open(filename, "rb").read())
+                    Encoders.encode_base64(part)
 
-                part.add_header('Content-Disposition', 'attachment; filename="self.filename_sended"')
+                    part.add_header('Content-Disposition', 'attachment; filename="filename"')
 
-                msg.attach(part)
+                    msg.attach(part)
 
-                smtp.sendmail(self.fromaddr, self.toaddrs, msg)
+                smtp.sendmail(self.fromaddr, self.toaddrs, msg.as_string())
                 smtp.quit()
             except:
                 self.handleError(None)  # no particular record
