@@ -33,8 +33,9 @@ TO = 'mlavrikova@detmir.ru'#, 'ikalinin@detmir.ru', 'FZuzikov@detmir.ru', 'NMine
 SUBJECT = 'Ошибка конвертации файла ERP - ПРОМО'
 CAPACITY = 9999
 FORMAT='%(asctime)s: %(message)s'
+FILENAME ='output.csv-error'
 
-handler = BufferingSMTPHandler(HOST, PORT, TIMEOUT, FROM, TO, SUBJECT, CAPACITY, FORMAT)
+handler = BufferingSMTPHandler(HOST, PORT, TIMEOUT, FROM, TO, SUBJECT, CAPACITY, FORMAT, FILENAME)
 email_logger = logging.getLogger('mail.detmir.ru')
 email_logger.setLevel = logging.CRITICAL
 email_logger.addHandler(handler)
@@ -284,22 +285,24 @@ logging.shutdown()
 if is_error:
     os.rename('output.csv', 'output.csv-error')
 
-    SUBJECT = "Файл конвертации с ошибкой"
-    msg = MIMEMultipart()
-    msg['Subject'] = SUBJECT
-    msg['From'] = FROM
-    msg['To'] = TO
+logging.shutdown()
 
-    part = MIMEBase('application', "octet-stream")
-    part.set_payload(open("output.csv-error", "rb").read())
-    Encoders.encode_base64(part)
+#    SUBJECT = "Файл конвертации с ошибкой"
+#    msg = MIMEMultipart()
+#    msg['Subject'] = SUBJECT
+#    msg['From'] = FROM
+#    msg['To'] = TO
 
-    part.add_header('Content-Disposition', 'attachment; filename="output.csv-error"')
+#    part = MIMEBase('application', "octet-stream")
+#    part.set_payload(open("output.csv-error", "rb").read())
+#    Encoders.encode_base64(part)
 
-    msg.attach(part)
+#    part.add_header('Content-Disposition', 'attachment; filename="output.csv-error"')
 
-    server = smtplib.SMTP('mail.detmir.ru', 25)
-    server.sendmail(FROM, TO, msg.as_string())
+#    msg.attach(part)
+
+#    server = smtplib.SMTP('mail.detmir.ru', 25)
+#    server.sendmail(FROM, TO, msg.as_string())
 
 
 
