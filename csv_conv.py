@@ -6,18 +6,12 @@ import re
 import os, sys
 import logging
 from buffering_smtp_handler import BufferingSMTPHandler
-import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email import Encoders
-
-from logging import handlers
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 filename = 'input.csv'
-if (len(sys.argv)>1):
+if len(sys.argv)>1:
   filename = str(sys.argv[1])
 
 logging.basicConfig(level=logging.WARNING,
@@ -33,9 +27,9 @@ TO = 'mlavrikova@detmir.ru'#, 'ikalinin@detmir.ru', 'FZuzikov@detmir.ru', 'NMine
 SUBJECT = 'Ошибка конвертации файла ERP - ПРОМО'
 CAPACITY = 9999
 FORMAT='%(asctime)s: %(message)s'
-FILENAME ='output.csv-error'
 
-handler = BufferingSMTPHandler(HOST, PORT, TIMEOUT, FROM, TO, SUBJECT, CAPACITY, FORMAT, FILENAME)
+
+handler = BufferingSMTPHandler(HOST, PORT, TIMEOUT, FROM, TO, SUBJECT, CAPACITY, FORMAT)
 email_logger = logging.getLogger('mail.detmir.ru')
 email_logger.setLevel = logging.CRITICAL
 email_logger.addHandler(handler)
@@ -66,13 +60,16 @@ brands_dict = load_brands()
 
 regex = re.compile('\(.*?\)')
 
+
 def floatx(value):
   return float(value or 0.0)
+
 
 def strx(value):
   return str(value or '')
 
 is_error = False
+
 
 def get_output_row(irow, is_sup):
     orow = dict()
@@ -280,10 +277,9 @@ with open('output.csv', 'wb') as writecsvfile:
                 i += 1
                 writer.writerow(orow)
 
-logging.shutdown()
-
 if is_error:
     os.rename('output.csv', 'output.csv-error')
+    handler.flush('output.csv-error')
 
 logging.shutdown()
 
